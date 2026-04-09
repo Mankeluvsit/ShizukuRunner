@@ -94,11 +94,3 @@ dependencies {
 
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
 }
-
-tasks.register("printCompileDebugJavaClasspath") {
-    doLast {
-        def t = tasks.named("compileDebugJavaWithJavac").get()
-        println("=== COMPILE DEBUG JAVA CLASSPATH ===")
-        t.classpath.files.each { println(it) }
-    }
-}
