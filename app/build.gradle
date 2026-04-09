@@ -1,5 +1,10 @@
 apply plugin: 'com.android.application'
 
+configurations {
+    shizukuApiAar
+    shizukuProviderAar
+}
+
 android {
     namespace "com.shizuku.uninstaller"
 
@@ -43,26 +48,52 @@ android {
     }
 }
 
+tasks.register("extractShizukuCompileJars") {
+    doLast {
+        def outDir = file("$buildDir/manual-shizuku")
+        outDir.mkdirs()
+
+        copy {
+            from(zipTree(configurations.shizukuApiAar.singleFile)) {
+                include "classes.jar"
+                rename { "shizuku-api.jar" }
+            }
+            into(outDir)
+        }
+
+        copy {
+            from(zipTree(configurations.shizukuProviderAar.singleFile)) {
+                include "classes.jar"
+                rename { "shizuku-provider.jar" }
+            }
+            into(outDir)
+        }
+
+        println("Extracted manual Shizuku compile jars to: $outDir")
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    dependsOn(tasks.named("extractShizukuCompileJars"))
+}
+
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.8.0'
 
+    shizukuApiAar 'dev.rikka.shizuku:api:13.1.5@aar'
+    shizukuProviderAar 'dev.rikka.shizuku:provider:13.1.5@aar'
+
     implementation 'dev.rikka.shizuku:api:13.1.5'
     implementation 'dev.rikka.shizuku:provider:13.1.5'
 
+    compileOnly files(
+        "$buildDir/manual-shizuku/shizuku-api.jar",
+        "$buildDir/manual-shizuku/shizuku-provider.jar"
+    )
+
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
 }
-
-
-tasks.register("printDebugCompileClasspathFiles") {
-    doLast {
-        println("=== DEBUG COMPILE CLASSPATH FILES ===")
-        configurations.debugCompileClasspath.resolve().each {
-            println(it)
-        }
-    }
-}
-
 
 tasks.register("printCompileDebugJavaClasspath") {
     doLast {
