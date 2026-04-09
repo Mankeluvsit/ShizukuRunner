@@ -10,7 +10,7 @@ on:
 jobs:
   debug:
     name: Build Debug APK
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout
@@ -22,6 +22,17 @@ jobs:
           distribution: temurin
           java-version: "11"
           cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install required SDK packages
+        run: |
+          yes | sdkmanager --licenses
+          sdkmanager \
+            "platform-tools" \
+            "platforms;android-32" \
+            "build-tools;32.0.0"
 
       - name: Grant execute permission
         run: chmod +x ./gradlew
