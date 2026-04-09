@@ -62,6 +62,19 @@ jobs:
       - name: Resolve debug compile classpath
         run: ./gradlew :app:dependencies --configuration debugCompileClasspath --no-daemon --stacktrace
 
+      - name: Inspect resolved Shizuku artifacts
+        run: |
+          echo "Searching Gradle cache for Shizuku artifacts..."
+          find ~/.gradle -iname "*shizuku*" | sed -n '1,200p'
+          echo
+          echo "Looking for Shizuku.class inside jars..."
+          find ~/.gradle -type f \( -name "*.jar" -o -name "*.aar" \) | while read f; do
+            if unzip -l "$f" 2>/dev/null | grep -q "rikka/shizuku/Shizuku.class"; then
+              echo "FOUND CLASS IN: $f"
+              unzip -l "$f" | grep "rikka/shizuku/Shizuku.class"
+            fi
+          done
+
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-daemon --stacktrace --info
 
