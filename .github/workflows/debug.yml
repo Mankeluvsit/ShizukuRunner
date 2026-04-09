@@ -58,6 +58,29 @@ jobs:
       - name: Print debug compile classpath files
         run: ./gradlew :app:printDebugCompileClasspathFiles --no-daemon --stacktrace
 
+      - name: Inspect exact Shizuku AAR contents
+        run: |
+          API_AAR="/home/runner/.gradle/caches/modules-2/files-2.1/dev.rikka.shizuku/api/13.1.5/1f760c56493bdbc01462930e75bb325033b36fe2/api-13.1.5.aar"
+          PROVIDER_AAR="/home/runner/.gradle/caches/modules-2/files-2.1/dev.rikka.shizuku/provider/13.1.5/4135b99cae9362fe2f63380230d04a9bcba9be3f/provider-13.1.5.aar"
+
+          echo "API AAR:"
+          ls -l "$API_AAR"
+          echo
+          echo "PROVIDER AAR:"
+          ls -l "$PROVIDER_AAR"
+          echo
+          echo "Top-level API AAR entries:"
+          unzip -l "$API_AAR" | sed -n '1,120p'
+          echo
+          TMPDIR="$(mktemp -d)"
+          unzip -q "$API_AAR" classes.jar -d "$TMPDIR"
+          echo "Looking for rikka/shizuku classes in API classes.jar:"
+          unzip -l "$TMPDIR/classes.jar" | grep 'rikka/shizuku' || true
+          echo
+          echo "Looking specifically for Shizuku.class:"
+          unzip -l "$TMPDIR/classes.jar" | grep 'rikka/shizuku/Shizuku.class'
+          rm -rf "$TMPDIR"
+
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-daemon --stacktrace --info
 
