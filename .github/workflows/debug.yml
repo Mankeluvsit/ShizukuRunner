@@ -33,7 +33,8 @@ jobs:
           sdkmanager \
             "platform-tools" \
             "platforms;android-32" \
-            "build-tools;32.0.0"
+            "platforms;android-33" \
+            "build-tools;33.0.2"
 
       - name: Set up JDK 11 for Gradle build
         uses: actions/setup-java@v4
@@ -57,28 +58,19 @@ jobs:
           sed -n '1,160p' settings.gradle
           echo
           echo "app/build.gradle"
-          sed -n '1,220p' app/build.gradle
+          sed -n '1,260p' app/build.gradle
+
+      - name: Check AAR metadata with details
+        run: ./gradlew :app:checkDebugAarMetadata --no-daemon --stacktrace --info
 
       - name: Resolve debug compile classpath
         run: ./gradlew :app:dependencies --configuration debugCompileClasspath --no-daemon --stacktrace
-
-      - name: Inspect resolved Shizuku artifacts
-        run: |
-          echo "Searching Gradle cache for Shizuku artifacts..."
-          find ~/.gradle -iname "*shizuku*" | sed -n '1,200p'
-          echo
-          echo "Looking for Shizuku.class inside jars..."
-          find ~/.gradle -type f \( -name "*.jar" -o -name "*.aar" \) | while read f; do
-            if unzip -l "$f" 2>/dev/null | grep -q "rikka/shizuku/Shizuku.class"; then
-              echo "FOUND CLASS IN: $f"
-              unzip -l "$f" | grep "rikka/shizuku/Shizuku.class"
-            fi
-          done
 
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-daemon --stacktrace --info
 
       - name: Upload debug APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: shizukurunner-debug-apk
