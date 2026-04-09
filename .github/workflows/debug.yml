@@ -84,6 +84,36 @@ jobs:
       - name: Print compileDebugJavaWithJavac classpath
         run: ./gradlew :app:printCompileDebugJavaClasspath --no-daemon --stacktrace
 
+      - name: Inspect transformed Shizuku jars used by Javac
+        run: |
+          API_JAR=$(find ~/.gradle/caches/transforms-3 -type f -name 'jetified-api-13.1.5-api.jar' | head -n 1)
+          PROVIDER_JAR=$(find ~/.gradle/caches/transforms-3 -type f -name 'jetified-provider-13.1.5-api.jar' | head -n 1)
+          AIDL_JAR=$(find ~/.gradle/caches/transforms-3 -type f -name 'jetified-aidl-13.1.5-api.jar' | head -n 1)
+          SHARED_JAR=$(find ~/.gradle/caches/transforms-3 -type f -name 'jetified-shared-13.1.5-api.jar' | head -n 1)
+
+          echo "API_JAR=$API_JAR"
+          echo "PROVIDER_JAR=$PROVIDER_JAR"
+          echo "AIDL_JAR=$AIDL_JAR"
+          echo "SHARED_JAR=$SHARED_JAR"
+          echo
+
+          echo "Searching API jar for Shizuku.class"
+          unzip -l "$API_JAR" | grep 'rikka/shizuku/Shizuku.class' || true
+          echo
+
+          echo "Searching API jar for all rikka/shizuku classes"
+          unzip -l "$API_JAR" | grep 'rikka/shizuku' || true
+          echo
+
+          echo "Searching provider jar for rikka/shizuku classes"
+          unzip -l "$PROVIDER_JAR" | grep 'rikka/shizuku' || true
+          echo
+
+          if ! unzip -l "$API_JAR" | grep -q 'rikka/shizuku/Shizuku.class'; then
+            echo "Shizuku.class is missing from the transformed API jar used by Javac"
+            exit 1
+          fi
+
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-daemon --stacktrace --info
 
