@@ -45,8 +45,25 @@ jobs:
       - name: Grant execute permission
         run: chmod +x ./gradlew
 
+      - name: Show repo state
+        run: |
+          echo "COMMIT:"
+          git log -1 --oneline
+          echo
+          echo "ROOT build.gradle"
+          sed -n '1,120p' build.gradle
+          echo
+          echo "settings.gradle"
+          sed -n '1,160p' settings.gradle
+          echo
+          echo "app/build.gradle"
+          sed -n '1,220p' app/build.gradle
+
+      - name: Resolve debug compile classpath
+        run: ./gradlew :app:dependencies --configuration debugCompileClasspath --no-daemon --stacktrace
+
       - name: Build debug APK
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: ./gradlew assembleDebug --no-daemon --stacktrace --info
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
