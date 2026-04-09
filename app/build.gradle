@@ -1,16 +1,15 @@
-plugins {
-    id 'com.android.application'
-}
-
 android {
     signingConfigs {
         release {
-            storeFile file('D:\\ginkgo\\文件备份\\key.keystore')
-            storePassword 'wewewe'
-            keyPassword 'wewewe'
-            keyAlias 'key0'
+            if (System.getenv("ANDROID_KEYSTORE_PATH")) {
+                storeFile file(System.getenv("ANDROID_KEYSTORE_PATH"))
+                storePassword System.getenv("ANDROID_STORE_PASSWORD")
+                keyAlias System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+            }
         }
     }
+
     compileSdk 32
 
     defaultConfig {
@@ -19,23 +18,19 @@ android {
         targetSdk 32
         versionCode 13
         versionName "13"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-}
-
-dependencies {
-    implementation "dev.rikka.shizuku:api:12.2.0"
-    implementation "dev.rikka.shizuku:provider:12.2.0"
 }
