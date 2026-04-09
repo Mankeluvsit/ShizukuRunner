@@ -81,6 +81,9 @@ jobs:
           unzip -l "$TMPDIR/classes.jar" | grep 'rikka/shizuku/Shizuku.class'
           rm -rf "$TMPDIR"
 
+      - name: Print compileDebugJavaWithJavac classpath
+        run: ./gradlew :app:printCompileDebugJavaClasspath --no-daemon --stacktrace
+
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-daemon --stacktrace --info
 

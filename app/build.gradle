@@ -62,3 +62,12 @@ tasks.register("printDebugCompileClasspathFiles") {
         }
     }
 }
+
+
+tasks.register("printCompileDebugJavaClasspath") {
+    doLast {
+        def t = tasks.named("compileDebugJavaWithJavac").get()
+        println("=== COMPILE DEBUG JAVA CLASSPATH ===")
+        t.classpath.files.each { println(it) }
+    }
+}
