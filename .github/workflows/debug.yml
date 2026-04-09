@@ -26,6 +26,8 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Install required SDK packages
+        env:
+          SKIP_JDK_VERSION_CHECK: "true"
         run: |
           yes | sdkmanager --licenses
           sdkmanager \
