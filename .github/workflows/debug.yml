@@ -53,44 +53,10 @@ jobs:
           echo
           sed -n '1,160p' settings.gradle
           echo
-          sed -n '1,260p' app/build.gradle
+          sed -n '1,320p' app/build.gradle
 
-      - name: Resolve debug compile classpath
-        run: ./gradlew :app:dependencies --configuration debugCompileClasspath --no-daemon --stacktrace
-
-      - name: Inspect resolved Shizuku artifacts
-        run: |
-          echo "Searching Gradle cache for Shizuku..."
-          find ~/.gradle -iname "*shizuku*" | sed -n '1,200p'
-          echo
-          echo "Looking for Shizuku.class inside AAR classes.jar..."
-          found=0
-          while IFS= read -r f; do
-            case "$f" in
-              *.jar)
-                if unzip -l "$f" 2>/dev/null | grep -q 'rikka/shizuku/Shizuku.class'; then
-                  echo "FOUND IN JAR: $f"
-                  unzip -l "$f" | grep 'rikka/shizuku/Shizuku.class'
-                  found=1
-                fi
-                ;;
-              *.aar)
-                tmpdir="$(mktemp -d)"
-                if unzip -q "$f" classes.jar -d "$tmpdir" 2>/dev/null; then
-                  if unzip -l "$tmpdir/classes.jar" 2>/dev/null | grep -q 'rikka/shizuku/Shizuku.class'; then
-                    echo "FOUND IN AAR: $f"
-                    unzip -l "$tmpdir/classes.jar" | grep 'rikka/shizuku/Shizuku.class'
-                    found=1
-                  fi
-                fi
-                rm -rf "$tmpdir"
-                ;;
-            esac
-          done < <(find ~/.gradle -type f \( -name "*.jar" -o -name "*.aar" \))
-          if [ "$found" -eq 0 ]; then
-            echo "Shizuku.class not found in resolved artifacts"
-            exit 1
-          fi
+      - name: Print debug compile classpath files
+        run: ./gradlew :app:printDebugCompileClasspathFiles --no-daemon --stacktrace
 
       - name: Build debug APK
         run: ./gradlew assembleDebug --no-daemon --stacktrace --info
